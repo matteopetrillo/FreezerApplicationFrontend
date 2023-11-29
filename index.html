@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Freezer App</title>
+    
+    <!-- Collegamento ai fogli di stile di Bootstrap (assicurati di avere una connessione internet attiva) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+
+    <div class="text-center">
+        <h2>Cosa c'è nel freezer? <button type="button" class="btn btn-danger" onclick="caricaDatiModal()" style="margin-left: 15px;" data-bs-toggle="modal" data-bs-target="#nuovoProdotto">Aggiungi Prodotto</button></h2>
+    </div>
+
+    <div class="modal fade" id="nuovoProdotto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 text-center" id="staticBackdropLabel">Scegli tra i seguenti prodotti:</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Quantità</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-new">
+                        <!-- I dati verranno aggiunti qui dinamicamente -->
+                    </tbody>
+                </table>
+                <h1 class="modal-title fs-5 text-center" id="staticBackdropLabel">O aggiungine uno nuovo!</h1>
+                <br>
+                <div id="nuovoProdottoForm" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                      <input id="NomeProdottoForm" class="form-control" placeholder="Inserisci Nome Prodotto...">
+                    </div>
+                    <div class="col-auto">
+                        <button id="QntProdottoForm" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            0
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li id="formDropdownItem" onclick="gestisciDropdownForm(this)"><a class="dropdown-item">1</a></li>
+                            <li id="formDropdownItem" onclick="gestisciDropdownForm(this)"><a class="dropdown-item">2</a></li>
+                            <li id="formDropdownItem" onclick="gestisciDropdownForm(this)"><a class="dropdown-item">3</a></li>
+                            <li id="formDropdownItem" onclick="gestisciDropdownForm(this)"><a class="dropdown-item">4</a></li>
+                            <li id="formDropdownItem" onclick="gestisciDropdownForm(this)"><a class="dropdown-item">5</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" onclick="aggiungiNuovoProdotto()" class="btn btn-success btn-sm NuovoProdotto">Aggiungi</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Quantità</th>
+                <th>+/-</th>
+            </tr>
+        </thead>
+        <tbody id="table-body-main">
+            <!-- I dati verranno aggiunti qui dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Funzione per effettuare la chiamata AJAX all'API e aggiungere dinamicamente gli elementi alla tabella
+    function caricaDati() {
+        $.ajax({
+            url: 'http://localhost:8080/prodotto/disponibile',
+            method: 'GET',
+            dataType: 'json',
+            headers: {
+                'Authorization': 'Basic ' + sessionStorage.getItem('credentials')
+            },
+            success: function (data) {
+                aggiornaTabella(data);
+            },
+            error: function (error) {
+                
+                if (error.status === 401) {
+                    window.location.href = 'login.html'
+                } else {
+                    console.error('Errore nella chiamata API:', error);
+                }
+            }
+        });
+    }
+
+    // Funzione per aggiornare dinamicamente la tabella con i dati ricevuti dalla chiamata API
+    function aggiornaTabella(data) {
+        var tableBody = $('#table-body-main');
+
+        $.each(data, function (index, element) {
+            var row = $('<tr>' +
+                '<td>' + element.nome + '</td>' +
+                '<td class="qnt-cell">' + element.qnt + '</td>' +
+                '<td>' +
+                    '<button type="button" class="btn btn-success btn-sm btnAdd">+</button>' +
+                    '<button type="button" class="btn btn-danger btn-sm btnSub">-</button>' +
+                '</td>' +
+            '</tr>');
+
+
+            tableBody.append(row);
+
+            // Aggiungi gli eventi ai pulsanti
+            row.find('.btnAdd').click(function () {
+                aggiornaQuantita(element.id, 'inc', row);
+            });
+
+            row.find('.btnSub').click(function () {
+                aggiornaQuantita(element.id, 'dec', row);
+            });
+        });
+    }
+
+    function aggiungiRigaTabella(element) {
+
+        var tableBody = $('#table-body-main');
+        var row = $(`
+            <tr>
+                <td>${element.nome}</td>
+                <td class="qnt-cell">${element.qnt}</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic outlined example">
+                        <button type="button" class="btn btn-success btn-sm btnAdd">+</button>
+                        <button type="button" class="btn btn-danger btn-sm btnSub">-</button>
+                    </div>
+                </td>
+            </tr>
+        `);
+
+        tableBody.append(row);
+
+        // Aggiungi gli eventi ai pulsanti
+        row.find('.btnAdd').click(function () {
+            aggiornaQuantita(element.id, 'inc', row);
+        });
+
+        row.find('.btnSub').click(function () {
+            aggiornaQuantita(element.id, 'dec', row);
+        });
+    }
+
+
+    // Funzione per effettuare la chiamata API per aggiornare la quantità
+    function aggiornaQuantita(id, operazione, row) {
+        $.ajax({
+            url: 'http://localhost:8080/prodotto-' + operazione + '/' + id,
+            method: 'PUT',
+            dataType: 'json',
+            headers: {
+                'Authorization': 'Basic ' + sessionStorage.getItem('credentials')
+            },
+            success: function (data) {
+                if (operazione === 'inc') {
+                    row.find('.qnt-cell').text(data.qnt);
+                } else if (operazione === 'dec') {
+                    var nuovoValore = data.qnt;
+                    if (nuovoValore > 0) {
+                        row.find('.qnt-cell').text(data.qnt);
+                    } else {
+                        row.remove();
+                    }
+                }
+            },
+            error: function (error) {
+                console.error('Errore nella chiamata API:', error);
+            }
+        });
+    }
+
+    // Funzione per effettuare la chiamata AJAX all'API e aggiungere dinamicamente gli elementi alla tabella nella finestra modale
+    function caricaDatiModal() {
+        $.ajax({
+            url: 'http://localhost:8080/prodotto/ofs',
+            method: 'GET',
+            dataType: 'json',
+            headers: {
+                'Authorization': 'Basic ' + sessionStorage.getItem('credentials')
+            },
+            success: function (data) {
+                aggiornaTabellaModal(data);
+            },
+            error: function (error) {
+                console.error('Errore nella chiamata API:', error);
+            }
+        });
+    }
+
+    // Funzione per aggiornare dinamicamente la tabella nella finestra modale con i dati ricevuti dalla chiamata API
+    function aggiornaTabellaModal(data) {
+        var tableBody = $('#table-body-new');
+
+        // Svuota la tabella
+        tableBody.empty();
+
+        $.each(data, function (index, element) {
+            var row = $(`
+                <tr>
+                    <td>${element.nome}</td>
+                    <td class="selectQntCell">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            0
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item">1</a></li>
+                            <li><a class="dropdown-item">2</a></li>
+                            <li><a class="dropdown-item">3</a></li>
+                            <li><a class="dropdown-item">4</a></li>
+                            <li><a class="dropdown-item">5</a></li>
+                        </ul>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-success btn-sm btnAggiungi">Aggiorna</button>
+                    </td>
+                </tr>
+            `);
+
+            tableBody.append(row);
+
+            // Aggiungi gli eventi ai pulsanti
+            gestisciDropdown(row);
+            gestisciBtnAggiungi(row, element.id);
+        });
+    }
+
+    // Funzione per gestire il dropdown nella tabella della finestra modale
+    function gestisciDropdown(row) {
+        var dropdownButton = row.find('.dropdown-toggle');
+        var dropdownItems = row.find('.dropdown-item');
+
+        dropdownItems.each(function () {
+            $(this).on('click', function () {
+                var selectedValue = $(this).text();
+                dropdownButton.text(selectedValue);
+            });
+        });
+    }
+
+    function gestisciDropdownForm(dropDownItem) {
+        var dropdownButton = $('#QntProdottoForm');
+        var selectedValue = $(dropDownItem).text();
+        dropdownButton.text(selectedValue);
+    }
+
+    // Funzione per gestire il pulsante "Aggiungi" nella tabella della finestra modale
+    function gestisciBtnAggiungi(row, id) {
+        var addButton = row.find('.btnAggiungi').click(function () {
+            var selectedValue = row.find('.dropdown-toggle').text();
+            $.ajax({
+                url: 'http://localhost:8080/prodotto/edit/' + id + '&' + selectedValue,
+                method: 'PUT',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Basic ' + sessionStorage.getItem('credentials')
+                },
+                success: function (data) {
+                    aggiungiRigaTabella(data)
+                    row.remove();
+                },
+                error: function (error) {
+                    console.error('Errore nella chiamata API:', error);
+                }
+            });
+        });
+    }
+
+    function aggiungiNuovoProdotto() {
+        // Ottieni i valori dai campi del form
+        var nomeProdotto = $('#NomeProdottoForm').val();
+        var quantita = $('#QntProdottoForm').text();
+
+        var requestBody = {
+            nome: nomeProdotto,
+            qnt: quantita
+        }
+
+        // Esegui la chiamata POST all'API con i dati del nuovo prodotto
+        $.ajax({
+            url: 'http://localhost:8080/prodotto',
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(requestBody),
+            headers: {
+                'Authorization': 'Basic ' + sessionStorage.getItem('credentials')
+            },
+            success: function (data) {
+                aggiungiRigaTabella(data);
+                $('#QntProdottoForm').text('0')
+                $('#NomeProdottoForm').val('');
+            },
+            error: function (error) {
+                console.error('Errore nella chiamata API:', error);
+            }
+        });
+    }
+
+    // Chiamare la funzione per caricare i dati all'avvio dell'applicazione
+    $(document).ready(function () {
+        caricaDati();
+    });
+</script>
+
+</body>
+</html>

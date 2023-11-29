@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Login</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="username">Username:</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-block" onclick="performLogin()">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        function performLogin() {
+            var username = $('#username').val();
+            var password = $('#password').val();
+
+            // Codifica le credenziali per Basic Auth
+            var credentials = btoa(username + ':' + password);
+
+            // Salva le credenziali nel localStorage (o puoi utilizzare altri metodi di archiviazione)
+            sessionStorage.setItem('credentials', credentials);
+
+            // Esegui la chiamata API di esempio
+            $.ajax({
+                url: 'http://localhost:8080/login',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Basic ' + credentials
+                },
+                success: function (data) {
+                    window.location.href = 'index.html'
+                },
+                error: function (error) {
+                    console.error('Errore nella chiamata API:', error.statusText);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
