@@ -87,7 +87,7 @@
     // Funzione per effettuare la chiamata AJAX all'API e aggiungere dinamicamente gli elementi alla tabella
     function caricaDati() {
         $.ajax({
-            url: 'http://localhost:8080/prodotto/disponibile',
+            url: 'http://172.232.218.214:8080/prodotto/disponibile',
             method: 'GET',
             dataType: 'json',
             headers: {
@@ -167,7 +167,7 @@
     // Funzione per effettuare la chiamata API per aggiornare la quantità
     function aggiornaQuantita(id, operazione, row) {
         $.ajax({
-            url: 'http://localhost:8080/prodotto-' + operazione + '/' + id,
+            url: 'http://172.232.218.214:8080/prodotto-' + operazione + '/' + id,
             method: 'PUT',
             dataType: 'json',
             headers: {
@@ -194,7 +194,7 @@
     // Funzione per effettuare la chiamata AJAX all'API e aggiungere dinamicamente gli elementi alla tabella nella finestra modale
     function caricaDatiModal() {
         $.ajax({
-            url: 'http://localhost:8080/prodotto/ofs',
+            url: 'http://172.232.218.214:8080/prodotto/ofs',
             method: 'GET',
             dataType: 'json',
             headers: {
@@ -270,7 +270,7 @@
         var addButton = row.find('.btnAggiungi').click(function () {
             var selectedValue = row.find('.dropdown-toggle').text();
             $.ajax({
-                url: 'http://localhost:8080/prodotto/edit/' + id + '&' + selectedValue,
+                url: 'http://172.232.218.214:8080/prodotto/edit/' + id + '&' + selectedValue,
                 method: 'PUT',
                 dataType: 'json',
                 headers: {
@@ -299,7 +299,7 @@
 
         // Esegui la chiamata POST all'API con i dati del nuovo prodotto
         $.ajax({
-            url: 'http://localhost:8080/prodotto',
+            url: 'http://172.232.218.214:8080/prodotto',
             method: 'POST',
             dataType: 'json',
             contentType: 'application/json',
