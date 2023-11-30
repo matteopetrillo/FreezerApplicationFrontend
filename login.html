@@ -24,7 +24,7 @@
                                 <label for="password">Password:</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-block" onsubmit="performLogin()">Login</button>
+                            <button type="submit" class="btn btn-primary btn-block" onclick="submitForm(event)">Login</button>
                         </form>
                     </div>
                 </div>
@@ -34,7 +34,10 @@
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-        function performLogin() {
+        function submitForm(event) {
+
+            event.preventDefault();
+
             var username = $('#username').val();
             var password = $('#password').val();
 
